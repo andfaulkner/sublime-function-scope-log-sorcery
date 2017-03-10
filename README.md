@@ -6,5 +6,5 @@ This plugin displays the current file, class and function name on the status bar
 
 ### Linux
 
-cd ~/.config/sublime-text-3/Packages/
-git clone https://github.com/Kraymer/SublimeFunctionNameDisplay.git
+    cd ~/.config/sublime-text-3/Packages/
+    git clone https://github.com/Kraymer/SublimeFunctionNameDisplay.git
