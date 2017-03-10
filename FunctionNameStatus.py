@@ -19,7 +19,7 @@ def plugin_loaded():
             Pref.display_arguments = settings.get('display_arguments', False)
             Pref.wait_time         = 0.12
             Pref.time              = time()
-    
+
     settings = sublime.load_settings('Function Name Display.sublime-settings')
     Pref = Pref()
     Pref.load()
@@ -79,7 +79,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
             # Look for any classes
             if Pref.display_class:
-                class_regions = view.find_by_selector('entity.name.type.class')
+                class_regions = view.find_by_selector('entity.name.class')
                 for r in reversed(class_regions):
                     row, col = view.rowcol(r.begin())
                     if row <= region_row:
