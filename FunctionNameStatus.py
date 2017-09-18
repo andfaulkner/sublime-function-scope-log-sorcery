@@ -47,7 +47,7 @@ def generate_function_name_text(view, region_row, had_class):
             if row <= region_row:
                 print("row:", row)
                 if Pref.display_class and had_class:
-                    out += "::"
+                    out += " # "
                 lines = view.substr(r).splitlines()
                 name = clean_name.sub('', lines[0])
                 print("func name:", name)
@@ -172,7 +172,8 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
             s = generate_class_and_function_string(view, region_row)
 
-            if not found:
+            # Handle condition where we failed to generate output string
+            if s == '':
                 view.erase_status('function')
                 fname = view.file_name()
                 if Pref.display_file and None != fname:
@@ -186,9 +187,36 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
         view.erase_status('function')
 
-class TestNewCmdCommand(sublime_plugin.TextCommand):
+#**************************************** HANDLE INSERTION ****************************************#
+class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         """Create a log with the scope in it"""
         print("RAN!")
-    
+        self.edit = edit
+        self.create_log_with_function_class(self.view)
+
+    def create_log_with_function_class(self, view):
+        view_settings = view.settings()
+        if view_settings.get('is_widget'):
+            return
+
+        for region in view.sel():
+            region_row, region_col = view.rowcol(region.begin())
+
+            print('region:', region)
+            print('region row & col:', view.rowcol(region.begin()))
+
+            s = generate_class_and_function_string(view, region_row)
+            print("s: OUTPUTTABLE!:", s)
+
+            # Handle condition where we failed to generate output string
+            if s == '':
+                print("s: empty:", s)
+
+            self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"{0}: \")".format(s))
+            print("function name:", s)
+            return
+
+        view.erase_status('function')
+
