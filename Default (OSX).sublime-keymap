@@ -1,0 +1,3 @@
+[
+	{ "keys": ["alt+shift+l"], "command": "log_with_scope_info" }
+]
