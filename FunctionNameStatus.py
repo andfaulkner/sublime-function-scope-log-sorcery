@@ -5,10 +5,10 @@ import re
 import sys
 from time import time
 
+
+#**************************************** UTLITY FUNCTIONS ****************************************#
 def get_function_regions(view):
-    """
-    Get all function regions
-    """
+    """Get all function regions """
     # Example: class Klass { matchesThisName() { ... } }
     method_region = view.find_by_selector('meta.class meta.method.declaration meta.definition.method entity.name.function')
     # Example: class Klass { matchesThisName = () => { ... } }
@@ -26,26 +26,17 @@ def get_function_regions(view):
     return function_regions
 
 def generate_class_name_text(view, region_row):
-    """
-    Generate class name text
-    """
-    class_name_maybe = ""
+    """Generate class name text"""
     class_regions = view.find_by_selector('entity.name.type.class')
     print('class regions:', class_regions)
     for r in reversed(class_regions):
         row, col = view.rowcol(r.begin())
         if row <= region_row:
-            class_name_maybe = view.substr(r)
-            print('class name:', view.substr(r))
-            found = True
-            break
+            return view.substr(r), True
+    return "", False
 
-    return class_name_maybe
-
-def generate_function_scope_text(view, region_row):
-    """
-    Generate text for immediately surrounding function (or method)
-    """
+def generate_function_name_text(view, region_row, had_class):
+    """Generate text for immediately surrounding function (or method)"""
     out = ""
     # List of regions (containing start & end points for all functions
     function_regions = get_function_regions(view)
@@ -55,7 +46,7 @@ def generate_function_scope_text(view, region_row):
             row, col = view.rowcol(r.begin())
             if row <= region_row:
                 print("row:", row)
-                if Pref.display_class and out:
+                if Pref.display_class and had_class:
                     out += "::"
                 lines = view.substr(r).splitlines()
                 name = clean_name.sub('', lines[0])
@@ -70,13 +61,46 @@ def generate_function_scope_text(view, region_row):
                             out += name.split('(')[0].split('::')[1].strip()
                     else:
                         out += name.split('(')[0].split(':')[0].strip()
-                found = True
                 break
-    return out
+    return out, True if out != "" else False
 
 def clean_class_and_function_str(s):
-    re.sub(r' *= *$', '', s)
+    return re.sub(r' *= *$', '', s)
 
+def generate_class_and_function_string(view, region_row):
+    """Build the full class & function scope as a string"""
+    s = ""
+    found = False
+    had_class = False
+    had_func = False
+
+    # Handle file name
+    fname = view.file_name()
+    if Pref.display_file and None != fname:
+        s += fname + " "
+        print("s :: display_file:", s)
+
+    # Look for any classes
+    if Pref.display_class:
+        class_name_text, had_class = generate_class_name_text(view, region_row)
+        found = found or had_func
+        s += class_name_text
+        print("s :: display_class:", s)
+
+    # Look for any functions
+    if Pref.display_function:
+        func_name_text, had_func = generate_function_name_text(view, region_row, had_class)
+        found = found or had_func
+        s += func_name_text
+        print("s :: display_function:", s)
+
+    # Clean result
+    s = clean_class_and_function_str(s)
+    print ("s :: final:", s)
+    return s
+
+
+#****************************************** MAIN PLUGIN *******************************************#
 # Ideas taken from C0D312, nizur & tito in
 # http://www.sublimetext.com/forum/viewtopic.php?f=2&t=4589
 # Also, from https://github.com/SublimeText/WordHighlight/blob/master/word_highlight.py
@@ -146,22 +170,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
             else:
                 return
 
-            s = ""
-            found = False
-
-            fname = view.file_name()
-            if Pref.display_file and None != fname:
-                 s = fname + " "
-
-            # Look for any classes
-            if Pref.display_class:
-                s += generate_class_name_text(view, region_row)
-
-            # Look for any functions
-            if Pref.display_function:
-                s += generate_function_scope_text(view, region_row)
-
-            s = clean_class_and_function_str(s)
+            s = generate_class_and_function_string(view, region_row)
 
             if not found:
                 view.erase_status('function')
@@ -180,8 +189,6 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 class TestNewCmdCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-        """
-        Create a log with the scope in it
-        """
+        """Create a log with the scope in it"""
         print("RAN!")
     
