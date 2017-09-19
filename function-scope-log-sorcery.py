@@ -117,7 +117,7 @@ def plugin_loaded():
             Pref.wait_time         = 0.12
             Pref.time              = time()
     
-    settings = sublime.load_settings('Function Name Display.sublime-settings')
+    settings = sublime.load_settings('function-scope-log-sorcery.sublime-settings')
     Pref = Pref()
     Pref.load()
     settings.add_on_change('reload', lambda:Pref.load())

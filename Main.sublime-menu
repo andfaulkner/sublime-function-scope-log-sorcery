@@ -12,17 +12,17 @@
 				"children":
 				[
 					{
-						"caption": "Function Name Display",
+						"caption": "Function Scope Log Sorcery",
 						"children":
 						[
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/Function Name Display/Function Name Display.sublime-settings"},
+								"args": {"file": "${packages}/function-scope-log-sorcery/function-scope-log-sorcery.sublime-settings"},
 								"caption": "Settings – Default"
 							},
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/User/Function Name Display.sublime-settings"},
+								"args": {"file": "${packages}/User/function-scope-log-sorcery.sublime-settings"},
 								"caption": "Settings – User"
 							}
 						]
