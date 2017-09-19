@@ -20,15 +20,15 @@ def get_function_regions(view):
     # Example: class Klass { events: matchesThisFunctionName = () => '...' }
     obj_lit_func = view.find_by_selector(
         '(meta.class meta.field.declaration meta.objectliteral meta.object.member meta.object-literal entity.name.function) - meta.class meta.arrow')
+
     function_regions = named_arrow_func_region + standard_func_region + obj_lit_func + bound_method_region + method_region # + named_arrow_in_arrow
-    for r in function_regions:
-        print('r:', r)
+    # for r in function_regions: print('get_function_regions :: Current region: value:', r)
     return function_regions
 
 def generate_class_name_text(view, region_row):
     """Generate class name text"""
     class_regions = view.find_by_selector('entity.name.type.class')
-    print('class regions:', class_regions)
+    # print("generate_class_name_text :: class regions:', class_regions)
     for r in reversed(class_regions):
         row, col = view.rowcol(r.begin())
         if row <= region_row:
@@ -45,12 +45,12 @@ def generate_function_name_text(view, region_row, had_class):
         for r in reversed(function_regions):
             row, col = view.rowcol(r.begin())
             if row <= region_row:
-                print("row:", row)
+                # print("generate_function_name_text :: current row:", row)
                 if Pref.display_class and had_class:
                     out += " # "
                 lines = view.substr(r).splitlines()
                 name = clean_name.sub('', lines[0])
-                print("func name:", name)
+                # print("generate_function_name_text :: func name after clean:", name)
                 if Pref.display_arguments:
                     out += name.strip()
                 else:
@@ -78,25 +78,25 @@ def generate_class_and_function_string(view, region_row):
     fname = view.file_name()
     if Pref.display_file and None != fname:
         s += fname + " "
-        print("s :: display_file:", s)
+        # print("generate_class_and_function_string :: display_file  :: s:", s)
 
     # Look for any classes
     if Pref.display_class:
         class_name_text, had_class = generate_class_name_text(view, region_row)
         found = found or had_func
         s += class_name_text
-        print("s :: display_class:", s)
+        # print("generate_class_and_function_string :: display_class  :: s:", s)
 
     # Look for any functions
     if Pref.display_function:
         func_name_text, had_func = generate_function_name_text(view, region_row, had_class)
         found = found or had_func
         s += func_name_text
-        print("s :: display_function:", s)
+        # print("generate_class_and_function_string :: display_function  :: s:", s)
 
     # Clean result
     s = clean_class_and_function_str(s)
-    print ("s :: final:", s)
+    # print ("generate_class_and_function_string :: final :: s ::", s)
     return s
 
 
@@ -140,7 +140,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
     # could be async, but ST2 does not support that
     def on_selection_modified(self, view):
-        print('on_selection_modified ran!')
+        # print('FunctionNameStatusEventHandler # on_selection_modified ran!')
         now = time()
         if now - Pref.time > Pref.wait_time:
             sublime.set_timeout(lambda:self.display_current_class_and_function(view, 'selection_modified'), 0)
@@ -162,9 +162,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
         for region in view.sel():
             region_row, region_col = view.rowcol(region.begin())
-
-            print('region:', region)
-            print('region row & col:', view.rowcol(region.begin()))
+            # print('region:', region, ';;  region row & col:', view.rowcol(region.begin()))
 
             if region_row != view_settings.get('function_name_status_row', -1):
                 view_settings.set('function_name_status_row', region_row)
@@ -172,7 +170,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
                 return
 
             s = generate_class_and_function_string(view, region_row)
-            print("s:", s)
+            # print("raw generated s (by generate_class_and_function_string):", s)
 
             # Handle condition where we failed to generate output string
             if s == '':
@@ -181,11 +179,11 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
                 if Pref.display_file and None != fname:
                     view.set_status('function', fname)
             else:
-                print('setting status!')
+                # print('status being set, to:', s)
                 # Set the status in the bottom bar
                 view.set_status('function', s)
 
-            print("function name:", s)
+            # print("display_current_class_and_function :: file (?) + function + class name:", s)
             return
 
         # view.erase_status('function')
@@ -195,7 +193,7 @@ class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         """Create a log with the scope in it"""
-        print("RAN!")
+        # print("LogWithScopeInfoCommand # run :: ran!")
         self.edit = edit
         self.create_log_with_function_class(self.view)
 
@@ -206,20 +204,19 @@ class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
 
         for region in view.sel():
             region_row, region_col = view.rowcol(region.begin())
-
-            print('region:', region)
-            print('region row & col:', view.rowcol(region.begin()))
+            # print('region:', region, ';;  region row & col:', view.rowcol(region.begin()))
 
             s = generate_class_and_function_string(view, region_row)
-            print("s: OUTPUTTABLE!:", s)
+            # print("s: name generated by generate_class_and_function_string:", s)
 
             # Handle condition where we failed to generate output string
             if s == '':
-                print("s: empty:", s)
-
-            self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"{0}: \")".format(s))
-            print("function name:", s)
-            return
+                # print("s: empty:", s)
+                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"\")".format(s))
+            else:
+                # print("function name to insert:", s)
+                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"{0}: \")".format(s))
+                return
 
         view.erase_status('function')
 
