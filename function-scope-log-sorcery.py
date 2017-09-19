@@ -211,12 +211,12 @@ class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
 
             # Handle condition where we failed to generate output string
             if s == '':
-                # print("s: empty:", s)
-                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"\")".format(s))
+                # print("create_log_with_function_class :: function name to insert:", s)
+                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"\");".format(s))
             else:
-                # print("function name to insert:", s)
-                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"{0}: \")".format(s))
-                return
+                # print("create_log_with_function_class :: function name to insert:", s)
+                self.view.insert(self.edit, self.view.sel()[0].begin(), "console.log(\"{0}: \");".format(s))
 
-        view.erase_status('function')
+        for _ in range(1, 4):
+            self.view.run_command("move", {"by": "characters", "forward": False})
 
