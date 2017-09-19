@@ -10,7 +10,7 @@ from time import time
 def get_function_regions(view):
     """Get all function regions """
     # Example: class Klass { matchesThisName() { ... } }
-    method_region = view.find_by_selector('meta.class meta.method.declaration meta.definition.method entity.name.function')
+    method_region = view.find_by_selector('meta.class meta.method.declaration ((meta.definition.method entity.name.function) | storage.type)')
     # Example: class Klass { matchesThisName = () => { ... } }
     bound_method_region = view.find_by_selector('meta.class meta.field.declaration meta.definition.property entity.name.function')
     # Example: function asdf { }
@@ -140,6 +140,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
 
     # could be async, but ST2 does not support that
     def on_selection_modified(self, view):
+        print('on_selection_modified ran!')
         now = time()
         if now - Pref.time > Pref.wait_time:
             sublime.set_timeout(lambda:self.display_current_class_and_function(view, 'selection_modified'), 0)
@@ -171,6 +172,7 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
                 return
 
             s = generate_class_and_function_string(view, region_row)
+            print("s:", s)
 
             # Handle condition where we failed to generate output string
             if s == '':
@@ -179,13 +181,14 @@ class FunctionNameStatusEventHandler(sublime_plugin.EventListener):
                 if Pref.display_file and None != fname:
                     view.set_status('function', fname)
             else:
+                print('setting status!')
                 # Set the status in the bottom bar
                 view.set_status('function', s)
 
             print("function name:", s)
             return
 
-        view.erase_status('function')
+        # view.erase_status('function')
 
 #**************************************** HANDLE INSERTION ****************************************#
 class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
