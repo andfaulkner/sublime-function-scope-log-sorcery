@@ -1,0 +1,9 @@
+{
+	"display_file": false,
+	"display_class": true,
+	"display_function": true,
+	"display_arguments": false,
+    "log_function": "console.log",
+    "space_around_class_and_func_divider": true,
+    "func_data_div": " :: "
+}
