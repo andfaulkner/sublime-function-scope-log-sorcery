@@ -1,4 +1,4 @@
-# Sublime Function Scope Log Sorcery 
+# Sublime Scoped Log Inject
 
 Allows insertion of a function & class name-containing log:
     If current line is inside a method, constructor, or class-property-bound function, outputs:

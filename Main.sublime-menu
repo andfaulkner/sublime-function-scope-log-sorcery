@@ -12,17 +12,17 @@
 				"children":
 				[
 					{
-						"caption": "Function Scope Log Sorcery",
+						"caption": "Scoped Log Inject",
 						"children":
 						[
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/function-scope-log-sorcery/function-scope-log-sorcery.sublime-settings"},
+								"args": {"file": "${packages}/scoped-log-inject/scoped-log-inject.sublime-settings"},
 								"caption": "Settings – Default"
 							},
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/User/function-scope-log-sorcery.sublime-settings"},
+								"args": {"file": "${packages}/User/scoped-log-inject.sublime-settings"},
 								"caption": "Settings – User"
 							}
 						]
