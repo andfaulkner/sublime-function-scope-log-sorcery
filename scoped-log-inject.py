@@ -25,9 +25,26 @@ def get_function_regions(view):
         '(meta.class meta.field.declaration meta.objectliteral meta.object.member meta.object-literal entity.name.function) - meta.class meta.arrow')
 
     wrapped_bound_method_region = view.find_by_selector('source meta.class meta.field.declaration meta.definition.property variable.object.property')
-    # source.tsx meta.class.tsx meta.field.declaration.tsx meta.definition.property.tsx variable.object.property.tsx
 
-    function_regions = named_arrow_func_region + standard_func_region + obj_lit_func + method_region + bound_method_region + wrapped_bound_method_region # + named_arrow_in_arrow
+    # Note: Below purposely doesn't work inside classes, which avoids most of the issues with the mechanism.
+    # Handles loose function names with wrapped
+    # Example:
+    #   const Textbox = observer(({text, onChange}: {text: string, onChange: EventHandler}) => {
+    #       // <-- INSERTION POINT HERE -->
+    #   });
+    wrapped_loose_fn_name = view.find_by_selector(
+        '(meta.var.expr meta.var-single-variable.expr meta.definition.variable variable.other.readwrite) - meta.class')
+
+    function_regions = (
+        wrapped_loose_fn_name +
+        named_arrow_func_region +
+        standard_func_region +
+        obj_lit_func +
+        method_region +
+        bound_method_region +
+        wrapped_bound_method_region
+    )
+
     # for r in function_regions: print('get_function_regions :: Current region: value:', r)
     return function_regions
 
