@@ -8,12 +8,9 @@ from time import time
 
 #**************************************** UTLITY FUNCTIONS ****************************************#
 def get_function_regions(view):
-    """Get all function regions. They're numeric (start, end) coordinate pairs """
+    """Get all function regions. They're numeric (start, end) coordinate pairs"""
     # Example: class Klass { matchesThisName() { ... } }
-    # method_region = view.find_by_selector('meta.class meta.method.declaration ((meta.definition.method entity.name.function) | storage.type)')
     method_region = view.find_by_selector('meta.class meta.method.declaration')
-    # print('method_region:', method_region)
-
     # Example: class Klass { matchesThisName = () => { ... } }
     bound_method_region = view.find_by_selector('meta.class meta.field.declaration meta.definition.property entity.name.function')
     # Example: function asdf { }
@@ -26,15 +23,14 @@ def get_function_regions(view):
 
     wrapped_bound_method_region = view.find_by_selector('source meta.class meta.field.declaration meta.definition.property variable.object.property')
 
-    # Note: Below purposely doesn't work inside classes, which avoids most of the issues with the mechanism.
-    # Handles loose function names with wrapped
-    # Example:
-    #   const Textbox = observer(({text, onChange}: {text: string, onChange: EventHandler}) => {
-    #       // <-- INSERTION POINT HERE -->
-    #   });
+    # Handles arrow functions assigned to named vars but not inside class or obj (by design). E.g.:
+    #     const Textbox = observer(({text, onChange}: {text: string, onChange: EventHandler}) => {
+    #         // Inserts:  log.info(`Textbox :: <CURSOR_HERE>`);
+    #     });
     wrapped_loose_fn_name = view.find_by_selector(
         '(meta.var.expr meta.var-single-variable.expr meta.definition.variable variable.other.readwrite) - meta.class')
 
+    # Conglomerate all regions of interest into mega-array
     function_regions = (
         wrapped_loose_fn_name +
         named_arrow_func_region +
@@ -45,7 +41,6 @@ def get_function_regions(view):
         wrapped_bound_method_region
     )
 
-    # for r in function_regions: print('get_function_regions :: Current region: value:', r)
     return function_regions
 
 def generate_class_name_text(view, region_row):
