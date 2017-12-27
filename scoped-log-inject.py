@@ -24,7 +24,10 @@ def get_function_regions(view):
     obj_lit_func = view.find_by_selector(
         '(meta.class meta.field.declaration meta.objectliteral meta.object.member meta.object-literal entity.name.function) - meta.class meta.arrow')
 
-    function_regions = named_arrow_func_region + standard_func_region + obj_lit_func + method_region + bound_method_region # + named_arrow_in_arrow
+    wrapped_bound_method_region = view.find_by_selector('source meta.class meta.field.declaration meta.definition.property variable.object.property')
+    # source.tsx meta.class.tsx meta.field.declaration.tsx meta.definition.property.tsx variable.object.property.tsx
+
+    function_regions = named_arrow_func_region + standard_func_region + obj_lit_func + method_region + bound_method_region + wrapped_bound_method_region # + named_arrow_in_arrow
     # for r in function_regions: print('get_function_regions :: Current region: value:', r)
     return function_regions
 
@@ -228,10 +231,10 @@ class LogWithScopeInfoCommand(sublime_plugin.TextCommand):
             # Handle condition where we failed to generate output string
             if s == '':
                 # print("create_log_with_function_class :: function name to insert:", s)
-                self.view.insert(self.edit, self.view.sel()[0].begin(), Pref.log_function + "(\"\");".format(s))
+                self.view.insert(self.edit, self.view.sel()[0].begin(), Pref.log_function + "(``);".format(s))
             else:
                 # print("create_log_with_function_class :: function name to insert:", s)
-                self.view.insert(self.edit, self.view.sel()[0].begin(), Pref.log_function + "(\"{0}{1}\");".format(s, Pref.func_data_div))
+                self.view.insert(self.edit, self.view.sel()[0].begin(), Pref.log_function + "(`{0}{1}`);".format(s, Pref.func_data_div))
 
         for _ in range(1, 4):
             self.view.run_command("move", {"by": "characters", "forward": False})
